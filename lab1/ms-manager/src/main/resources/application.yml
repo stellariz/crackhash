@@ -1,0 +1,4 @@
+workers:
+  number: 1
+  service:
+    url: ${WORKER_URL}

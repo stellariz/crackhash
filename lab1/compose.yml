@@ -1,0 +1,28 @@
+services:
+  manager:
+    container_name: ms-manager
+    build:
+      context: ./ms-manager
+      dockerfile: Dockerfile
+    networks: 
+      - manager-worker-network
+    ports:
+      - "8080:8080"
+    environment:
+      WORKER_URL: http://worker:8081
+
+  worker:
+    container_name: ms-worker
+    build:
+      context: ./ms-worker
+      dockerfile: Dockerfile
+    networks: 
+      - manager-worker-network
+    ports:
+      - "8081:8081"
+    environment:
+      MANAGER_URL: http://manager:8080
+
+
+networks:
+  manager-worker-network: 

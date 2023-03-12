@@ -1,0 +1,6 @@
+server:
+  port: 8081
+
+manager:
+  service:
+    url: ${MANAGER_URL}
