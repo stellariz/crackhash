@@ -63,11 +63,23 @@ dependencies {
     implementation "org.glassfish.jaxb:jaxb-runtime:4.0.1"
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
 
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.14.2'
+
+    // https://mvnrepository.com/artifact/org.springframework/spring-oxm
+    implementation group: 'org.springframework', name: 'spring-oxm', version: '6.0.7'
+
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webflux
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '3.0.2'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-amqp
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-amqp', version: '3.0.4'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-mongodb
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-mongodb', version: '3.0.5'
+
+    // https://mvnrepository.com/artifact/org.awaitility/awaitility
+    implementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
 }
 
 tasks.named('test') {

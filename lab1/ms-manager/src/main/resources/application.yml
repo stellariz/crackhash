@@ -1,4 +1,8 @@
 workers:
-  number: 1
-  service:
-    url: ${WORKER_URL}
+  number: 2
+  timeout: 100
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongodb1:27017/test?replicaSet=rsmongo

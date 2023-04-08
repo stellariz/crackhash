@@ -1,28 +1,26 @@
-package ru.nsu.ccfit.msworker.web;
+package ru.nsu.ccfit.msworker.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Service;
 import ru.nsu.ccfit.msworker.service.HashCrackerService;
-import ru.nsu.ccfit.msworker.service.UpdateRequestStatusService;
 import ru.nsu.ccfit.schema.CrackHashManagerRequest;
 import ru.nsu.ccfit.schema.CrackHashWorkerResponse;
 
 @Slf4j
-@RestController
-@RequestMapping("/internal/api/worker/hash/crack/task")
+@Service
 @RequiredArgsConstructor
-public class WorkerController {
+public class WorkerService {
     private final HashCrackerService hashCrackerService;
-    private final UpdateRequestStatusService updateRequestStatusService;
 
-    @PostMapping
-    public CrackHashWorkerResponse startJob(@RequestBody CrackHashManagerRequest request) {
-        log.debug("Received request with id {}", request.getRequestId());
+    @RabbitListener(queues = "task_queue")
+    @SendTo("task_status_queue")
+    public CrackHashWorkerResponse startJob(CrackHashManagerRequest request) {
+        log.info("Received request with id {}", request.getRequestId());
         CrackHashWorkerResponse response = new CrackHashWorkerResponse();
         response.setRequestId(request.getRequestId());
         response.setPartNumber(request.getPartNumber());
@@ -33,7 +31,6 @@ public class WorkerController {
         responseAnswers.getWords().addAll(answers);
         response.setAnswers(responseAnswers);
 
-        updateRequestStatusService.updateStatus(response);
         return response;
     }
 }

@@ -6,13 +6,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import ru.nsu.ccfit.msmanager.model.request.HashCrackRequestDto;
 import ru.nsu.ccfit.msmanager.model.response.HashCrackResponseDto;
+import ru.nsu.ccfit.msmanager.model.status.RequestStatus;
 import ru.nsu.ccfit.schema.CrackHashManagerRequest;
-import ru.nsu.ccfit.schema.CrackHashWorkerResponse;
 
 @Slf4j
 @Service
@@ -20,9 +21,7 @@ import ru.nsu.ccfit.schema.CrackHashWorkerResponse;
 public class ManagerService {
     @Value("${workers.number:1}")
     private int workersNumber;
-    @Value("${workers.service.url}")
-    private String workersUrl;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RabbitTemplate rabbitTemplate;
     private final StatusService statusService;
     private final List<String> alphabet = List.of("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o",
             "p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9");
@@ -32,13 +31,14 @@ public class ManagerService {
         String hash = request.getHash();
         int maxLength = request.getMaxLength();
 
-        statusService.initRequestStatus(requestId);
+        RequestStatus requestStatus = statusService.initRequestStatus(requestId);
         IntStream.range(0, workersNumber)
                 .forEach(workerNumber ->
                     // it doesn't work in docker but without it all's ok....
-                    CompletableFuture.runAsync(() -> delegateJob(requestId, workerNumber, workersNumber, hash, maxLength)
+                    CompletableFuture.runAsync(() -> delegateJob(requestStatus.getRequestId(),
+                            workerNumber, workersNumber, hash, maxLength)
                 ));
-        log.info("Created request with id {}", requestId);
+        log.info("Created request with id {}",requestId);
         return new HashCrackResponseDto(requestId);
     }
 
@@ -53,7 +53,10 @@ public class ManagerService {
         var requestAlphabet = new CrackHashManagerRequest.Alphabet();
         requestAlphabet.getSymbols().addAll(alphabet);
         request.setAlphabet(requestAlphabet);
-        restTemplate.postForObject(
-                workersUrl + "/internal/api/worker/hash/crack/task", request, CrackHashWorkerResponse.class);
+        try {
+            rabbitTemplate.convertAndSend("task_queue", request);
+        } catch (AmqpException ex) {
+            log.error("Error with saving message with id [{}]: {}", requestId, ex.getMessage());
+        }
     }
 }
