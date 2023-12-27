@@ -4,10 +4,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Service;
-import ru.nsu.ccfit.msworker.service.HashCrackerService;
 import ru.nsu.ccfit.schema.CrackHashManagerRequest;
 import ru.nsu.ccfit.schema.CrackHashWorkerResponse;
 
